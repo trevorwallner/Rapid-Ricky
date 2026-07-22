@@ -616,12 +616,28 @@ function render(){
 
 if(FIREBASE_ENABLED && docRef){
   statusLine.textContent = `Live sync on · room "${roomId}"`;
+  let resolved = false;
+  const fallbackTimer = setTimeout(() => {
+    if(resolved) return;
+    resolved = true;
+    console.warn('Firestore did not respond in time — falling back to local-only mode. This usually means the network (e.g. a work/school firewall) is blocking the connection.');
+    state = load() || { players: [], rounds: [], started: false };
+    statusLine.textContent = 'Local mode (could not reach live sync)';
+    render();
+  }, 6000);
+
   docRef.onSnapshot(snap => {
+    resolved = true;
+    clearTimeout(fallbackTimer);
     state = snap.exists() ? snap.data() : { players: [], rounds: [], started: false };
     render();
   }, err => {
+    resolved = true;
+    clearTimeout(fallbackTimer);
     console.error('Firebase sync error', err);
-    statusLine.textContent = 'Live sync error — check Firestore rules (see browser console)';
+    state = load() || { players: [], rounds: [], started: false };
+    statusLine.textContent = 'Local mode (live sync error — check Firestore rules)';
+    render();
   });
 } else {
   state = load() || { players: [], rounds: [], started: false };
