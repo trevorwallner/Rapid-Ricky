@@ -248,10 +248,20 @@ const FIREBASE_ENABLED = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "
 const roomId = new URLSearchParams(location.search).get('room') || 'rapid-ricky';
 
 let db = null, docRef = null;
+let firebaseReady = false;
 if(FIREBASE_ENABLED){
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
-  docRef = db.collection('tournaments').doc(roomId);
+  try{
+    if(typeof firebase === 'undefined'){
+      throw new Error('Firebase SDK script did not load (likely blocked by network/firewall)');
+    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    docRef = db.collection('tournaments').doc(roomId);
+    firebaseReady = true;
+  }catch(e){
+    console.warn('Firebase unavailable, falling back to local-only mode:', e.message);
+    firebaseReady = false;
+  }
 }
 
 /* ---------------- State ---------------- */
@@ -264,13 +274,12 @@ function load(){
   }catch(e){ return null; }
 }
 function save(){
-  if(FIREBASE_ENABLED && docRef){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); // always keep a local backup
+  if(firebaseReady && docRef){
     docRef.set(state).catch(err => {
       console.error('Firebase save failed', err);
       statusLine.textContent = 'Sync error — check Firestore rules (see console)';
     });
-  } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 }
 
@@ -614,7 +623,7 @@ function render(){
   }
 }
 
-if(FIREBASE_ENABLED && docRef){
+if(firebaseReady && docRef){
   statusLine.textContent = `Live sync on · room "${roomId}"`;
   let resolved = false;
   const fallbackTimer = setTimeout(() => {
