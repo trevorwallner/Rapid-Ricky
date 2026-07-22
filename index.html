@@ -232,12 +232,6 @@ const STORAGE_KEY = 'rapidRickyTournament';
    (with "YOUR_API_KEY") to keep using this browser's local storage
    instead — everything still works, it just won't sync live.
 ------------------------------------------------------------------- */
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBQ2U-yhW9b1u5vJ3GpbDVjiihTkaVexa8",
   authDomain: "bock-party-rapid-ricky.firebaseapp.com",
@@ -247,8 +241,6 @@ const firebaseConfig = {
   appId: "1:858204381660:web:e4d4ec2c8e7778b8e7ef19"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 const FIREBASE_ENABLED = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY");
 
 // Everyone who opens the page with the same ?room=xyz shares one bracket.
